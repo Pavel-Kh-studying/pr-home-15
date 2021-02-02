@@ -1,13 +1,19 @@
 'use strict';
 
+const supportedSocials = new Map()
+  .set('www.facebook.com', '/assets/images/facebook.svg')
+  .set('www.instagram.com', '/assets/images/instagram.svg')
+  .set('twitter.com', '/assets/images/twitter.svg');
+
 const cardContainer = document.getElementById('root');
 
 const cardCollection = responseData.map((person) => createPersonCardElement(person));
 
 cardContainer.append(...cardCollection);
 
+
 function createPersonCardElement(person) {
-  const { firstName, lastName, contacts: [...links] } = person;
+  const { firstName, lastName, contacts: links } = person;
 
   const h2 = createElement('h2', { classNames: ['personName'] }, [
     document.createTextNode(firstName.concat(' ', lastName)),
@@ -22,39 +28,27 @@ function createPersonCardElement(person) {
 
 // ==========================================================================================
 
-  const personContacts = new Map();
+  function createIcons(links) {
+    const arrayOfIcons = links.map((link) => {
+      const { hostname } = new URL(link);
 
-  for (let i = 0; i < links.length; i++) {
-    let url = new URL(links[i]);
-    personContacts.set(url.hostname, links[i]);
+      if (supportedSocials.has(hostname)) {
+        const imgPath = supportedSocials.get(hostname);
+
+        const a = createElement('a', { classNames: ['socialLink'] }, []);
+        a.setAttribute('href', link);
+        const img = createElement('img', { classNames: ['linkImg'] }, []);
+        img.setAttribute('src', imgPath);
+        img.setAttribute('alt', hostname);
+        a.append(img);
+        return a;
+      }
+      return;
+    })
+    return arrayOfIcons;
   }
 
-  let i = 0;
-
-  for (const iter of personContacts) {
-    const a = createElement('a', { classNames: ['socialLink'] }, []);
-
-    if (iter[0] === 'www.facebook.com') {
-      createLink('./assets/images/facebook.svg', 'facebook', a)
-    } else 
-    if (iter[0] === 'www.instagram.com') {
-      createLink('./assets/images/instagram.svg', 'instagram', a)
-    } else
-    if (iter[0] === 'twitter.com') {
-      createLink('./assets/images/twitter.svg', 'twitter', a)
-    } 
-
-    i++;
-  }
-
-  function createLink(src, alt, a) {
-    const img = createElement('img', { classNames: ['linkImg'] }, []);
-    img.setAttribute('src', src);
-    img.setAttribute('alt', alt);
-    a.setAttribute('href', links[i]); 
-    a.append(img);
-    div.append(a);
-  }
+  div.append(...createIcons(links));
 
 // ==========================================================================================
 
